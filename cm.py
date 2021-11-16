@@ -11,27 +11,12 @@ import pickle
 import json
 import glob
 
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from konlpy.tag import Mecab
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import NMF, PCA
-from gensim.test.utils import common_texts
-from gensim.corpora.dictionary import Dictionary
-from gensim.models.nmf import Nmf as GensimNMF
-from gensim.models.coherencemodel import CoherenceModel
-from sklearn.preprocessing import MinMaxScaler, normalize
-from gensim.models.word2vec import Word2Vec
-import os
-
 #import dask.dataframe as dd
-from dask.multiprocessing import get
-from dask.diagnostics import ProgressBar
+
 from tqdm.auto import tqdm
 tqdm.pandas()
 ProgressBar().register()
+
 from util import Helper
 import pandas as pd
 import numpy as np
@@ -45,33 +30,27 @@ class cell_migration(Helper):
     
     eps = 0.01
     
-    def __init__(self, L ,W, H, N0, C0, Uc, Un, Dc, Dn, Qcb0, Qcd0, Qn, A0, dx, dt):
-        #W = 10    #width
-        #L = 850   #length
-        #H = 17    #height
-        L_ = 850
-        V = L_*H*W
-        M = 20     #number of tubes
-        L1= V/(M*W*H)
+    def __init__(self, config_path=os.path.abspath(os.getcwd())+'/config.json'):
+
+        self.V = self.L_*self.H*self.W
+        self.L1= self.V/(self.M*self.W*self.H)
         
-        self.d1 = Dc/Dn
-        self.d2 = 0 #Un*L/Dc
-        self.d3 = Qn*C0*L**2/Dn
-        self.e1 = Uc*L/Dc
-        self.e2 = A0*N0/Dc
-        self.e3 = Qcb0*N0*C0*L**2/Dc
-        self.e4 = Qcd0*L**2/(Dc*N0)
+        self.d1 = self.Dc/self.Dn
+        self.d2 = 0
+        self.d3 = self.Qn*self.C0*self.L**2/self.Dn
+        self.e1 = self.Uc*self.L/self.Dc
+        self.e2 = self.A0*self.N0/self.Dc
+        self.e3 = self.Qcb0*self.N0*self.C0*self.L**2/self.Dc
+        self.e4 = self.Qcd0*self.L**2/(self.Dc*self.N0)
         
-        self.l_ = L/L_ #L = L^
-        self.l1 = L1/L_
-        
-        self.dx = dx
-        self.dt = dt
+        self.l_ = self.L/self.L_ #L = L^
+        self.l1 = self.L1/self.L_
+
          
-        self.a = int((self.l_+self.l1)/dx)#end of the real tube
-        self.b = int(1/dt) # n of step for iteration -> time
+        self.a = int((self.l_+self.l1)/self.dx)#end of the real tube
+        self.b = int(1/self.dt) # n of step for iteration -> time
         
-        self.e = int(self.l_/dx) #end of our experiment: end of real+img. tube
+        self.e = int(self.l_/self.dx) #end of our experiment: end of real+img. tube
         
         #concentration of cell
         self.c = pd.DataFrame(np.zeros([self.a+1, self.b+1]))
@@ -80,9 +59,9 @@ class cell_migration(Helper):
         
         #concentration of nutrient
         self.n = pd.DataFrame(np.zeros([self.a+1, self.b+1]))
-        self.n.iloc[:int(1/dx),0] = 0
+        self.n.iloc[:int(1/self.dx),0] = 0
         self.n.iloc[0,:] = 0
-        self.n.iloc[int(1/dx):,:] = 1
+        self.n.iloc[int(1/self.dx):,:] = 1
         
         
     def f1(self,i):
@@ -177,7 +156,7 @@ class cell_migration(Helper):
     def avg_entering(self):
         return self.c.values[self.e,1:self.a].sum() / (self.a)
     
-    def plotting_conc(self,name):
+    def plotting_conc(self):
         fig_n = sns.lineplot(x = np.tile(np.arange(0,cm.a+1),cm.b+1), y = pd.melt(cm.n).value, hue = np.repeat(np.arange(0,cm.a+1),cm.b+1),palette = "Blues")
 
         fig_c = sns.lineplot(x = np.tile(np.arange(0,cm.a+1),cm.b+1), y = pd.melt(cm.c).value, hue = np.repeat(np.arange(0,cm.a+1),cm.b+1),palette = "Blues")
@@ -192,7 +171,7 @@ class cell_migration(Helper):
         
         #plt.text(self.a+self.b-9,self.avg_channel()-0.1, 'Avg # of Cells in a Channel')
         #plt.text(self.a+self.b-9,self.avg_entering()-0.1, 'Avg # of Cells entering')
-        plt.savefig(name)
+        plt.savefig(self.plot_conc)
 
 if __name__ == "__main__":
     fire.Fire(cell_migration)

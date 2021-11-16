@@ -11,24 +11,9 @@ import pickle
 import json
 import glob
 
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from konlpy.tag import Mecab
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import NMF, PCA
-from gensim.test.utils import common_texts
-from gensim.corpora.dictionary import Dictionary
-from gensim.models.nmf import Nmf as GensimNMF
-from gensim.models.coherencemodel import CoherenceModel
-from sklearn.preprocessing import MinMaxScaler, normalize
-from gensim.models.word2vec import Word2Vec
 import os
 
 #import dask.dataframe as dd
-from dask.multiprocessing import get
-from dask.diagnostics import ProgressBar
 from tqdm.auto import tqdm
 tqdm.pandas()
 ProgressBar().register()
@@ -51,16 +36,28 @@ class Helper:
         curnt_dir = os.path.dirname(os.path.abspath("__file__"))
         
         data_path = data['param']
+        self.N0 = curnt_dir+data_path['N0']
+        self.C0 = curnt_dir+data_path['C0']
+        self.Uc = curnt_dir+data_path['Uc']
+        self.Un = curnt_dir+data_path['Un']
+        self.Dc = curnt_dir+data_path['Dc']
+        self.Qcb0 = curnt_dir+data_path['Qcb0']
+        self.Qcd0 = curnt_dir+data_path['Qcd0']
+        self.Qn = curnt_dir+data_path['Qn']
+        self.A0 = curnt_dir+data_path['A0']
+        self.L_ = curnt_dir+data_path['L_']
+        self.M = curnt_dir+data_path['M']
+        self.W = curnt_dir+data_path['W']
+        self.H = curnt_dir+data_path['H']
+        self.dx = curnt_dir+data_path['dx']
+        self.dt = curnt_dir+data_path['dt']
+        self.M = curnt_dir+data_path['M']
         
-        self.N0 = data_path['N0']
-        self.C0 = data_path['C0']
-        self.Uc = data_path['Uc']
-        self.Un = data_path['Un']
-        self.Dc = data_path['Dc']
-        self.Qcb0 = data_path['Qcb0']
-        self.Qcd0 = data_path['Qcd0']
-        self.Qn = data_path['Qn']
-        self.A0 = data_path['A0']
-
+        save_path = data['save_path']
+        self.plot_conc = save_path['plot_conc_path']
+#        self.plot_conc = save_path['plot_conc_path']
+#        self.plot_conc = save_path['plot_conc_path']
+        
+        
 if __name__ == "__main__":
     fire.Fire(Helper)
